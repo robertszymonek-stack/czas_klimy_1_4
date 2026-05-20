@@ -1,73 +1,135 @@
-import { cities } from "../data";
+import { useState } from "react";
 import Icon from "./Icon";
 
-export default function Cities() {
-  const total = cities.reduce((s, c) => s + c.count, 0);
-  const max = Math.max(...cities.map((c) => c.count));
+const ACCESS_KEY = "7142b5c3-09f0-4888-a63a-c95a7accb443";
+
+export default function Contact() {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    city: "Legionowo",
+    type: "Montaż klimatyzacji",
+    area: "",
+    message: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+
+    const formData = new FormData();
+    formData.append("access_key", ACCESS_KEY);
+    formData.append("subject", `Nowe zapytanie - ${form.name || "Strona"} (${form.city})`);
+    formData.append("Imię i nazwisko", form.name);
+    formData.append("Telefon", form.phone);
+    formData.append("Email", form.email);
+    formData.append("Miasto", form.city);
+    formData.append("Rodzaj usługi", form.type);
+    formData.append("Przybliżony metraż", form.area);
+    formData.append("Dodatkowe informacje", form.message);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await response.json();
+
+      if (json.success) {
+        setStatus("sent");
+        setForm({ name: "", phone: "", email: "", city: "Legionowo", type: "Montaż klimatyzacji", area: "", message: "" });
+        setTimeout(() => setStatus("idle"), 8000);
+      } else {
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 5000);
+      }
+    } catch (error) {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 5000);
+    }
+  };
 
   return (
-    <section className="bg-white py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+    <section id="kontakt" className="relative overflow-hidden bg-slate-950 py-20 text-white lg:py-28">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-br from-sky-500/30 via-cyan-400/20 to-transparent blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <div>
-            <span className="text-sm font-semibold uppercase tracking-widest text-orange-600">
-              Obszar działania
-            </span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              Montujemy blisko Ciebie.
-            </h2>
-            <p className="mt-4 text-lg text-slate-600">
-              Siedziba w Jachrance, działamy w kierunku północno-wschodnim od
-              Warszawy. Krótki dojazd = szybszy montaż i serwis.
-            </p>
-            <div className="mt-8 flex items-center gap-4 rounded-2xl border border-orange-200 bg-white p-5 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white">
-                <Icon name="map" />
+            <span className="text-sm font-semibold uppercase tracking-widest text-sky-400">Kontakt</span>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">Wypełnij formularz</h2>
+            <p className="mt-4 text-lg text-white/70">Oddzwonimy, omówimy potrzeby i podamy wycenę — najczęściej w ciągu kilku godzin. Bezpłatnie i bez zobowiązań.</p>
+
+            <div className="mt-8 space-y-4">
+              <a href="tel:+48788304845" className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-sky-400/40 hover:bg-white/10">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white"><Icon name="phone" /></span>
+                <div><div className="text-xs text-white/50">Telefon</div><div className="font-semibold">+48 788 304 845</div></div>
+              </a>
+              <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white"><Icon name="map" /></span>
+                <div><div className="text-xs text-white/50">Siedziba</div><div className="font-semibold">Jachranka 45, k. Serocka</div></div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-slate-900">
-                  {total}+ montaży
-                </div>
-                <div className="text-sm text-slate-600">
-                  w {cities.length} miastach i okolicach
-                </div>
+              <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white"><Icon name="award" /></span>
+                <div><div className="text-xs text-white/50">Ocena</div><div className="font-semibold">5/5 na Google</div></div>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-sky-400/20 bg-sky-400/10 p-5">
+              <div className="flex items-start gap-3">
+                <span className="relative mt-1 flex h-3 w-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75" /><span className="relative inline-flex h-3 w-3 rounded-full bg-sky-400" /></span>
+                <p className="text-sm text-sky-100"><strong>Odpowiadamy szybko.</strong> Wypełnij formularz, a oddzwonimy, aby omówić szczegóły i podać wycenę.</p>
               </div>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-8">
-              <div className="space-y-3">
-                {cities.map((c) => {
-                  const width = (c.count / max) * 100;
-                  return (
-                    <div key={c.name}>
-                      <div className="mb-1.5 flex items-baseline justify-between text-sm">
-                        <span className="font-medium text-slate-900">
-                          {c.name}
-                        </span>
-                        <span className="font-semibold text-sky-600">
-                          {c.count}
-                        </span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-500"
-                          style={{ width: `${width}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
-                * Dane za ostatnie 24 miesiące. W każdej lokalizacji mamy
-                stałych klientów korzystających z serwisu.
-              </p>
+          <form onSubmit={handleSubmit} className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-6 backdrop-blur-xl sm:p-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Imię i nazwisko">
+                <input required name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" placeholder="Jan Kowalski" />
+              </Field>
+              <Field label="Telefon">
+                <input required type="tel" name="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" placeholder="+48 ..." />
+              </Field>
+              <Field label="E-mail" full>
+                <input type="email" name="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input" placeholder="jan@domena.pl" />
+              </Field>
+              <Field label="Miasto">
+                <select name="city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="input">
+                  {["Legionowo", "Warszawa Białołęka", "Serock", "Marki", "Jabłonna", "Nieporęt", "Wieliszew", "Skrzeszew", "Jachranka", "Inne"].map((c) => (<option key={c} value={c}>{c}</option>))}
+                </select>
+              </Field>
+              <Field label="Rodzaj usługi">
+                <select name="type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="input">
+                  {["Montaż klimatyzacji", "Serwis klimatyzacji", "Klimatyzacja multisplit", "Klimatyzacja do biura", "Przegląd okresowy", "Inne"].map((c) => (<option key={c} value={c}>{c}</option>))}
+                </select>
+              </Field>
+              <Field label="Przybliżony metraż">
+                <input name="area" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} className="input" placeholder="np. 25 m²" />
+              </Field>
+              <Field label="Dodatkowe informacje" full>
+                <textarea rows={4} name="message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input resize-none" placeholder="Np. salon 30 m², 3 piętro, okna od południa..." />
+              </Field>
             </div>
-          </div>
+
+            <button type="submit" disabled={status === "sending"} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sky-400 to-cyan-400 px-7 py-4 text-base font-semibold text-slate-950 shadow-xl shadow-sky-500/30 transition hover:brightness-110 disabled:opacity-60">
+              {status === "sending" ? (<>Wysyłanie... <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg></>) 
+              : status === "sent" ? (<>Dziękujemy! Skontaktujemy się w ciągu kilku godzin. <Icon name="check" className="h-5 w-5" /></>) 
+              : status === "error" ? ("Błąd. Spróbuj ponownie lub zadzwoń.") 
+              : (<>Wyślij zapytanie <Icon name="arrow" className="h-4 w-4" /></>)}
+            </button>
+            <p className="mt-3 text-center text-xs text-white/50">Pracujemy w dni powszednie 8:00–18:00. Wysyłając formularz akceptujesz politykę prywatności.</p>
+          </form>
         </div>
       </div>
     </section>
   );
+}
+
+function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
+  return (<label className={`block ${full ? "sm:col-span-2" : ""}`}><span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/60">{label}</span>{children}</label>);
 }
